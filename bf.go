@@ -10,7 +10,7 @@ import (
 type Brainfuck struct {
 	Instructions []byte
 	Pointer, At int
-	Memory []int
+	Memory []byte
 	Loops *list.List
 }
 
@@ -88,16 +88,26 @@ func (bf *Brainfuck) Print() {
 	fmt.Printf("%c", bf.Memory[bf.At])
 }
 
+// ,
+func (bf *Brainfuck) ReadByte() {
+	b := make([]byte, 1)
+	if _, err := os.Stdin.Read(b); err != nil {
+		panic(err) // programming
+	} else {
+		*&bf.Memory[bf.At] = b[0]
+	}
+}
+
 
 func main() {
 	var bf Brainfuck
-	if text, err := ioutil.ReadAll(os.Stdin); err == nil {
+	if text, err := ioutil.ReadFile(os.Args[1]); err == nil {
 		bf = Brainfuck{
 			// Strip the newline Stdin gives us.
 			Instructions: text[:len(text)-1],
 			Pointer: 0,
 			At: 0,
-			Memory: make([]int, 30),
+			Memory: make([]byte, 30),
 			Loops: list.New(),
 		}
 	} else {
@@ -120,6 +130,8 @@ func main() {
 			bf.Close()
 		} else if inst == "." {
 			bf.Print()
+		} else if inst == "," {
+			bf.ReadByte()
 		}
 	}
 }
